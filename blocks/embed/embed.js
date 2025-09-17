@@ -1,7 +1,7 @@
 /*
  * Embed Block
- * Show videos and social posts directly on your page
- * https://www.hlx.live/developer/block-collection/embed
+ * Show videos, social posts, and Klaviyo forms
+ * DA.Live / Helix compatible
  */
 
 const loadScript = (url, callback, type) => {
@@ -9,40 +9,32 @@ const loadScript = (url, callback, type) => {
   const script = document.createElement('script');
   script.src = url;
   if (type) script.setAttribute('type', type);
-  script.onload = callback;
+  if (callback) script.onload = callback;
   head.append(script);
   return script;
 };
 
-const getDefaultEmbed = (url) => `<div style="left: 0; width: 100%; height: 0; position: relative; padding-bottom: 56.25%;">
-  <iframe src="${url.href}" style="border: 0; top: 0; left: 0; width: 100%; height: 100%; position: absolute;" allowfullscreen=""
-    scrolling="no" allow="encrypted-media" title="Content from ${url.hostname}" loading="lazy">
-  </iframe>
+// Standard embeds
+const getDefaultEmbed = (url) => `<div style="position:relative;width:100%;height:0;padding-bottom:56.25%;">
+  <iframe src="${url.href}" style="border:0;position:absolute;top:0;left:0;width:100%;height:100%;" allowfullscreen="" scrolling="no" allow="encrypted-media" title="Content from ${url.hostname}" loading="lazy"></iframe>
 </div>`;
 
 const embedYoutube = (url, autoplay) => {
   const usp = new URLSearchParams(url.search);
   const suffix = autoplay ? '&muted=1&autoplay=1' : '';
   let vid = usp.get('v') ? encodeURIComponent(usp.get('v')) : '';
-  const embed = url.pathname;
   if (url.origin.includes('youtu.be')) [, vid] = url.pathname.split('/');
-  const embedHTML = `<div style="left: 0; width: 100%; height: 0; position: relative; padding-bottom: 56.25%;">
-      <iframe src="https://www.youtube.com${vid ? `/embed/${vid}?rel=0&v=${vid}${suffix}` : embed}" style="border: 0; top: 0; left: 0; width: 100%; height: 100%; position: absolute;" 
-      allow="autoplay; fullscreen; picture-in-picture; encrypted-media; accelerometer; gyroscope; picture-in-picture" allowfullscreen="" scrolling="no" title="Content from Youtube" loading="lazy"></iframe>
-    </div>`;
-  return embedHTML;
+  return `<div style="position:relative;width:100%;height:0;padding-bottom:56.25%;">
+    <iframe src="https://www.youtube.com${vid ? `/embed/${vid}?rel=0&v=${vid}${suffix}` : url.pathname}" style="border:0;position:absolute;top:0;left:0;width:100%;height:100%;" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen="" scrolling="no" title="Content from Youtube" loading="lazy"></iframe>
+  </div>`;
 };
 
 const embedVimeo = (url, autoplay) => {
   const [, video] = url.pathname.split('/');
   const suffix = autoplay ? '?muted=1&autoplay=1' : '';
-  const embedHTML = `<div style="left: 0; width: 100%; height: 0; position: relative; padding-bottom: 56.25%;">
-      <iframe src="https://player.vimeo.com/video/${video}${suffix}" 
-      style="border: 0; top: 0; left: 0; width: 100%; height: 100%; position: absolute;" 
-      frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen  
-      title="Content from Vimeo" loading="lazy"></iframe>
-    </div>`;
-  return embedHTML;
+  return `<div style="position:relative;width:100%;height:0;padding-bottom:56.25%;">
+    <iframe src="https://player.vimeo.com/video/${video}${suffix}" style="border:0;position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen title="Content from Vimeo" loading="lazy"></iframe>
+  </div>`;
 };
 
 const embedTwitter = (url) => {
@@ -51,6 +43,7 @@ const embedTwitter = (url) => {
   return embedHTML;
 };
 
+// Load standard embed based on URL
 const loadEmbed = (block, link, autoplay) => {
   if (block.classList.contains('embed-is-loaded')) return;
 
@@ -60,7 +53,7 @@ const loadEmbed = (block, link, autoplay) => {
     { match: ['twitter'], embed: embedTwitter },
   ];
 
-  const config = EMBEDS_CONFIG.find((e) => e.match.some((match) => link.includes(match)));
+  const config = EMBEDS_CONFIG.find((e) => e.match.some((m) => link.includes(m)));
   const url = new URL(link);
 
   if (config) {
@@ -75,7 +68,7 @@ const loadEmbed = (block, link, autoplay) => {
 };
 
 // ---- Klaviyo support ----
-function ensureKlaviyoScript(companyId) {
+const ensureKlaviyoScript = (companyId) => {
   if (document.querySelector('script[src*="static.klaviyo.com/onsite/js/klaviyo.js"]')) return;
   const script = document.createElement('script');
   script.async = true;
@@ -83,22 +76,26 @@ function ensureKlaviyoScript(companyId) {
   script.src = `https://static.klaviyo.com/onsite/js/klaviyo.js?company_id=${companyId}`;
   document.head.appendChild(script);
   console.debug('Klaviyo script injected:', script.src);
-}
+};
 
 // ---- Main decorate function ----
 export default function decorate(block) {
   const placeholder = block.querySelector('picture');
   const linkEl = block.querySelector('a');
-  const klaviyoDiv = block.querySelector('[class^="klaviyo-form-"]');
+  const klaviyoFormId = block.dataset.klaviyoForm;
 
-  // Case 1: Raw Klaviyo embed
-  if (!linkEl && klaviyoDiv) {
-    console.debug('Embed block: Klaviyo form detected, leaving block intact.');
-    ensureKlaviyoScript('TAN3ML'); // <-- replace with real key
-    return;
+  // Case: Klaviyo embed (dynamic div)
+  if (klaviyoFormId) {
+    console.debug('Embed block: Klaviyo form detected.');
+    const klaviyoDiv = document.createElement('div');
+    klaviyoDiv.className = `klaviyo-form-${klaviyoFormId}`;
+    block.appendChild(klaviyoDiv);
+    // Replace with your public API key
+    ensureKlaviyoScript('TAN3ML');
+    return; // stop further processing
   }
 
-  // Case 2/3: Standard embed with <a>
+  // Case: Standard embed with <a>
   if (linkEl) {
     const link = linkEl.href;
     block.textContent = '';
@@ -108,9 +105,7 @@ export default function decorate(block) {
       wrapper.className = 'embed-placeholder';
       wrapper.innerHTML = '<div class="embed-placeholder-play"><button type="button" title="Play"></button></div>';
       wrapper.prepend(placeholder);
-      wrapper.addEventListener('click', () => {
-        loadEmbed(block, link, true);
-      });
+      wrapper.addEventListener('click', () => loadEmbed(block, link, true));
       block.append(wrapper);
     } else {
       const observer = new IntersectionObserver((entries) => {
