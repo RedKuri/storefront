@@ -28,8 +28,8 @@
   cursor: pointer;
 }
 
-/* Hide text inside <a> tags for Klaviyo/embed markers without removing element */
-.block.embed a {
+/* Hide text inside <a> tags ONLY for Klaviyo markers */
+.block.embed a[href^="klaviyo://"] {
   display: inline-block;    /* keep element in flow */
   width: 0;
   height: 0;
