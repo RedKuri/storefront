@@ -1,7 +1,7 @@
 /*
  * Embed Block
- * Show videos, social posts, and Klaviyo forms
- * DA.Live / Helix compatible
+ * YouTube / Vimeo / Twitter / Klaviyo
+ * DA.Live compatible
  */
 
 const loadScript = (url, callback, type) => {
@@ -14,7 +14,7 @@ const loadScript = (url, callback, type) => {
   return script;
 };
 
-// Standard embeds
+// Standard embed helpers
 const getDefaultEmbed = (url) => `<div style="position:relative;width:100%;height:0;padding-bottom:56.25%;">
   <iframe src="${url.href}" style="border:0;position:absolute;top:0;left:0;width:100%;height:100%;" allowfullscreen="" scrolling="no" allow="encrypted-media" title="Content from ${url.hostname}" loading="lazy"></iframe>
 </div>`;
@@ -43,7 +43,18 @@ const embedTwitter = (url) => {
   return embedHTML;
 };
 
-// Load standard embed based on URL
+// Klaviyo script injection
+const ensureKlaviyoScript = (companyId) => {
+  if (document.querySelector('script[src*="static.klaviyo.com/onsite/js/klaviyo.js"]')) return;
+  const script = document.createElement('script');
+  script.async = true;
+  script.type = 'text/javascript';
+  script.src = `https://static.klaviyo.com/onsite/js/klaviyo.js?company_id=${companyId}`;
+  document.head.appendChild(script);
+  console.debug('Klaviyo script injected:', script.src);
+};
+
+// Load embed based on URL
 const loadEmbed = (block, link, autoplay) => {
   if (block.classList.contains('embed-is-loaded')) return;
 
@@ -67,35 +78,22 @@ const loadEmbed = (block, link, autoplay) => {
   block.classList.add('embed-is-loaded');
 };
 
-// ---- Klaviyo support ----
-const ensureKlaviyoScript = (companyId) => {
-  if (document.querySelector('script[src*="static.klaviyo.com/onsite/js/klaviyo.js"]')) return;
-  const script = document.createElement('script');
-  script.async = true;
-  script.type = 'text/javascript';
-  script.src = `https://static.klaviyo.com/onsite/js/klaviyo.js?company_id=${companyId}`;
-  document.head.appendChild(script);
-  console.debug('Klaviyo script injected:', script.src);
-};
-
 // ---- Main decorate function ----
 export default function decorate(block) {
   const placeholder = block.querySelector('picture');
   const linkEl = block.querySelector('a');
-  const klaviyoFormId = block.dataset.klaviyoForm;
 
-  // Case: Klaviyo embed (dynamic div)
-  if (klaviyoFormId) {
-    console.debug('Embed block: Klaviyo form detected.');
+  // Case 1: Klaviyo embed via <a href="klaviyo://FORM_ID">
+  if (linkEl && linkEl.href.startsWith('klaviyo://')) {
+    const formId = linkEl.href.split('://')[1];
     const klaviyoDiv = document.createElement('div');
-    klaviyoDiv.className = `klaviyo-form-${klaviyoFormId}`;
+    klaviyoDiv.className = `klaviyo-form-${formId}`;
     block.appendChild(klaviyoDiv);
-    // Replace with your public API key
-    ensureKlaviyoScript('TAN3ML');
+    ensureKlaviyoScript('YOUR_PUBLIC_API_KEY'); // replace with actual key
     return; // stop further processing
   }
 
-  // Case: Standard embed with <a>
+  // Case 2/3: Standard embed with <a>
   if (linkEl) {
     const link = linkEl.href;
     block.textContent = '';
