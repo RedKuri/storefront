@@ -91,9 +91,9 @@ export default function decorate(block) {
   const placeholder = block.querySelector('picture');
   const linkEl = block.querySelector('a');
 
-  // If no <a> is present, leave the block alone (e.g. for Klaviyo embeds)
+  // If no <a>, leave content intact (important for Klaviyo)
   if (!linkEl) {
-    return;
+    return; 
   }
 
   const link = linkEl.href;
@@ -118,3 +118,4 @@ export default function decorate(block) {
     observer.observe(block);
   }
 }
+
