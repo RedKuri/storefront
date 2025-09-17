@@ -78,22 +78,27 @@ const loadEmbed = (block, link, autoplay) => {
   block.classList.add('embed-is-loaded');
 };
 
-// ---- Main decorate function ----
 export default function decorate(block) {
   const placeholder = block.querySelector('picture');
   const linkEl = block.querySelector('a');
 
-  // Case 1: Klaviyo embed via <a href="klaviyo://FORM_ID">
-  if (linkEl && linkEl.href.startsWith('klaviyo://')) {
-    const formId = linkEl.href.split('://')[1];
-    const klaviyoDiv = document.createElement('div');
-    klaviyoDiv.className = `klaviyo-form-${formId}`;
-    block.appendChild(klaviyoDiv);
-    ensureKlaviyoScript('YOUR_PUBLIC_API_KEY'); // replace with actual key
-    return; // stop further processing
+  // ---- Case 1: Raw Klaviyo div already exists ----
+  const klaviyoDiv = block.querySelector('[class^="klaviyo-form-"]');
+  if (klaviyoDiv) {
+    // Nothing to do — script is already in header
+    return;
   }
 
-  // Case 2/3: Standard embed with <a>
+  // ---- Case 2: Klaviyo via <a href="klaviyo://FORM_ID"> ----
+  if (linkEl && linkEl.href.startsWith('klaviyo://')) {
+    const formId = linkEl.href.split('://')[1];
+    const div = document.createElement('div');
+    div.className = `klaviyo-form-${formId}`;
+    block.appendChild(div);
+    return; // script already loaded in header
+  }
+
+  // ---- Case 3: Standard video/social embeds ----
   if (linkEl) {
     const link = linkEl.href;
     block.textContent = '';
@@ -115,4 +120,5 @@ export default function decorate(block) {
       observer.observe(block);
     }
   }
-}
+};
+
