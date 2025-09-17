@@ -83,25 +83,17 @@ export default function decorate(block) {
   const placeholder = block.querySelector('picture');
   const linkEl = block.querySelector('a');
 
-  // ---- Case 1: Raw Klaviyo div already exists ----
-  const klaviyoDiv = block.querySelector('[class^="klaviyo-form-"]');
-  if (klaviyoDiv) {
-    // Inject script only if not already loaded
-    ensureKlaviyoScript('TAN3ML'); // replace with actual key
-    return; // leave div intact
-  }
-
-  // ---- Case 2: Klaviyo via <a href="klaviyo://FORM_ID"> ----
+  // Case 1: Klaviyo embed via <a href="klaviyo://FORM_ID">
   if (linkEl && linkEl.href.startsWith('klaviyo://')) {
     const formId = linkEl.href.split('://')[1];
-    const div = document.createElement('div');
-    div.className = `klaviyo-form-${formId}`;
-    block.appendChild(div);
-    ensureKlaviyoScript('TAN3ML');
-    return;
+    const klaviyoDiv = document.createElement('div');
+    klaviyoDiv.className = `klaviyo-form-${formId}`;
+    block.appendChild(klaviyoDiv);
+    ensureKlaviyoScript('YOUR_PUBLIC_API_KEY'); // replace with actual key
+    return; // stop further processing
   }
 
-  // ---- Case 3: Standard video/social embeds ----
+  // Case 2/3: Standard embed with <a>
   if (linkEl) {
     const link = linkEl.href;
     block.textContent = '';
@@ -123,5 +115,4 @@ export default function decorate(block) {
       observer.observe(block);
     }
   }
-};
-
+}
