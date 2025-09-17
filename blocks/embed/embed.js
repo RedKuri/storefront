@@ -6,7 +6,7 @@ export default function decorate(block) {
   const klaviyoDiv = block.querySelector('[class^="klaviyo-form-"]');
   if (klaviyoDiv) {
     // Inject script only if not already loaded
-    ensureKlaviyoScript('YOUR_PUBLIC_API_KEY'); // replace with actual key
+    ensureKlaviyoScript('TAN3ML'); // replace with actual key
     return; // leave div intact
   }
 
@@ -16,7 +16,7 @@ export default function decorate(block) {
     const div = document.createElement('div');
     div.className = `klaviyo-form-${formId}`;
     block.appendChild(div);
-    ensureKlaviyoScript('YOUR_PUBLIC_API_KEY');
+    ensureKlaviyoScript('TAN3ML');
     return;
   }
 
