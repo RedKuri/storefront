@@ -1,62 +1,39 @@
-.embed {
-  width: unset;
-  text-align: center;
-  max-width: 800px;
-  margin: 32px auto;
-}
+/* embed.css */
 
-.embed > div {
-  display: flex;
-  justify-content: center;
-}
-
-.embed.embed-twitter .twitter-tweet-rendered {
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.embed .embed-placeholder {
-  width: 100%;
-  aspect-ratio: 16 / 9;
+/* General embed block styling */
+.block.embed {
   position: relative;
+  margin: 1rem 0;
 }
 
-.embed .embed-placeholder > * {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  inset: 0;
-}
-
-.embed .embed-placeholder picture img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.embed .embed-placeholder-play button {
-  box-sizing: border-box;
+/* Placeholder styling */
+.embed-placeholder {
   position: relative;
-  display: block;
-  transform: scale(3);
-  width: 22px;
-  height: 22px;
-  border: 2px solid;
-  border-radius: 20px;
-  padding: 0;
+  cursor: pointer;
 }
 
-.embed .embed-placeholder-play button::before {
-  content: "";
-  display: block;
-  box-sizing: border-box;
+.embed-placeholder-play {
   position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.embed-placeholder-play button {
+  background: rgba(0,0,0,0.6);
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+}
+
+/* Hide text inside <a> tags for Klaviyo/embed markers without removing element */
+.block.embed a {
+  display: inline-block;    /* keep element in flow */
   width: 0;
-  height: 10px;
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  border-left: 6px solid;
-  top: 4px;
-  left: 7px;
+  height: 0;
+  overflow: hidden;         /* hide content */
+  text-indent: -9999px;     /* push text off-screen */
+  white-space: nowrap;      /* prevent wrapping */
 }
