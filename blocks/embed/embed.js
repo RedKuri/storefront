@@ -89,7 +89,14 @@ const loadEmbed = (block, link, autoplay) => {
 
 export default function decorate(block) {
   const placeholder = block.querySelector('picture');
-  const link = block.querySelector('a').href;
+  const linkEl = block.querySelector('a');
+
+  // If no <a> is present, leave the block alone (e.g. for Klaviyo embeds)
+  if (!linkEl) {
+    return;
+  }
+
+  const link = linkEl.href;
   block.textContent = '';
 
   if (placeholder) {
