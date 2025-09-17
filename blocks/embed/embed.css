@@ -30,7 +30,8 @@
 
 /* Hide text inside <a> tags ONLY for Klaviyo markers */
 .block.embed a[href^="klaviyo://"] {
-  display: inline-block;    /* keep element in flow */
+  visibility: hidden;
+  display: none;
   width: 0;
   height: 0;
   overflow: hidden;         /* hide content */
