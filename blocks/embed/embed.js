@@ -1,7 +1,7 @@
 /*
  * Embed Block
- * YouTube / Vimeo / Twitter / Klaviyo
- * DA.Live compatible
+ * Show videos and social posts directly on your page
+ * https://www.hlx.live/developer/block-collection/embed
  */
 
 const loadScript = (url, callback, type) => {
@@ -14,7 +14,7 @@ const loadScript = (url, callback, type) => {
   return script;
 };
 
-// Standard embed helpers
+
 const getDefaultEmbed = (url) => `<div style="position:relative;width:100%;height:0;padding-bottom:56.25%;">
   <iframe src="${url.href}" style="border:0;position:absolute;top:0;left:0;width:100%;height:100%;" allowfullscreen="" scrolling="no" allow="encrypted-media" title="Content from ${url.hostname}" loading="lazy"></iframe>
 </div>`;
@@ -43,7 +43,7 @@ const embedTwitter = (url) => {
   return embedHTML;
 };
 
-// Klaviyo script injection
+
 const ensureKlaviyoScript = (companyId) => {
   if (document.querySelector('script[src*="static.klaviyo.com/onsite/js/klaviyo.js"]')) return;
   const script = document.createElement('script');
@@ -54,7 +54,7 @@ const ensureKlaviyoScript = (companyId) => {
   console.debug('Klaviyo script injected:', script.src);
 };
 
-// Load embed based on URL
+
 const loadEmbed = (block, link, autoplay) => {
   if (block.classList.contains('embed-is-loaded')) return;
 
@@ -82,23 +82,20 @@ export default function decorate(block) {
   const placeholder = block.querySelector('picture');
   const linkEl = block.querySelector('a');
 
-  // ---- Case 1: Raw Klaviyo div already exists ----
+
   const klaviyoDiv = block.querySelector('[class^="klaviyo-form-"]');
   if (klaviyoDiv) {
-    // Nothing to do — script is already in header
     return;
   }
 
-  // ---- Case 2: Klaviyo via <a href="klaviyo://FORM_ID"> ----
   if (linkEl && linkEl.href.startsWith('klaviyo://')) {
     const formId = linkEl.href.split('://')[1];
     const div = document.createElement('div');
     div.className = `klaviyo-form-${formId}`;
     block.appendChild(div);
-    return; // script already loaded in header
+    return;
   }
 
-  // ---- Case 3: Standard video/social embeds ----
   if (linkEl) {
     const link = linkEl.href;
     block.textContent = '';

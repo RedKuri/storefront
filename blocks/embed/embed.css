@@ -1,12 +1,8 @@
-/* embed.css */
-
-/* General embed block styling */
 .block.embed {
   position: relative;
   margin: 1rem 0;
 }
 
-/* Placeholder styling */
 .embed-placeholder {
   position: relative;
   cursor: pointer;
@@ -28,13 +24,12 @@
   cursor: pointer;
 }
 
-/* Hide text inside <a> tags ONLY for Klaviyo markers */
 .block.embed a[href^="klaviyo://"] {
   visibility: hidden;
   display: none;
   width: 0;
   height: 0;
-  overflow: hidden;         /* hide content */
-  text-indent: -9999px;     /* push text off-screen */
-  white-space: nowrap;      /* prevent wrapping */
+  overflow: hidden;
+  text-indent: -9999px;
+  white-space: nowrap;
 }
